@@ -1,0 +1,33 @@
+name: Validate
+
+# Only run on PRs to the main branch
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout project code
+      - uses: actions/checkout@v2
+
+      # Install and run shellcheck for all shell scripts
+      - run: sudo apt install shellcheck
+      - run: for f in $(find scripts -type f -name *.sh); do shellcheck $f; done;
+
+      # Use python setup action to configure version
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      # Install python poetry and dependencies for use in later steps
+      - run: ./scripts/poetry.sh
+
+      # Change working directory and run validation script
+      - working-directory: ./lambda
+        run: ../scripts/validate.sh
+
+      # Change working directory and run build script
+      - working-directory: ./lambda
+        run: ../scripts/build.sh

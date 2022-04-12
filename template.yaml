@@ -1,0 +1,29 @@
+# AWS Serverless Application Model (SAM) template
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sample SAM Template for sam-app
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: app.handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /api
+            Method: post
+        HTTPApiV2:
+          Type: HttpApi
+          Properties:
+            Path: /httpapiv2
+            Method: post

@@ -1,0 +1,71 @@
+{
+  "body": "key=test%20value",
+  "headers": {
+    "Accept": "*/*",
+    "Content-Length": "16",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Host": "127.0.0.1:10112",
+    "User-Agent": "curl/7.74.0",
+    "X-Forwarded-Port": "10112",
+    "X-Forwarded-Proto": "http"
+  },
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "multiValueHeaders": {
+    "Accept": [
+      "*/*"
+    ],
+    "Content-Length": [
+      "16"
+    ],
+    "Content-Type": [
+      "application/x-www-form-urlencoded"
+    ],
+    "Host": [
+      "127.0.0.1:10112"
+    ],
+    "User-Agent": [
+      "curl/7.74.0"
+    ],
+    "X-Forwarded-Port": [
+      "10112"
+    ],
+    "X-Forwarded-Proto": [
+      "http"
+    ]
+  },
+  "multiValueQueryStringParameters": null,
+  "path": "/api",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "domainName": "127.0.0.1:10112",
+    "extendedRequestId": null,
+    "httpMethod": "POST",
+    "identity": {
+      "accountId": null,
+      "apiKey": null,
+      "caller": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityPoolId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "Custom User Agent String",
+      "userArn": null
+    },
+    "path": "/api",
+    "protocol": "HTTP/1.1",
+    "requestId": "1328ae17-5eaf-488a-9cd4-918cf7079b6a",
+    "requestTime": "10/Apr/2022:07:28:07 +0000",
+    "requestTimeEpoch": 1649575687,
+    "resourceId": "123456",
+    "resourcePath": "/api",
+    "stage": null
+  },
+  "resource": "/api",
+  "stageVariables": null,
+  "version": "1.0"
+}

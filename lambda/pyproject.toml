@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "example"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
+pylint = "^2.13.5"
+moto = "^3.1.4"
+coverage = "^6.3.2"
+httpretty = "^1.1.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
