@@ -1,10 +1,10 @@
 """
-AWS Lambda handler, can be invoked directly or integrated with an AWS HTTP API Gateway (v2)
+AWS Lambda handler, can be invoked directly or integrated with an AWS API Gateway (v1 or v2)
 https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
 """
 
 import logging
-from example import payload
+from app_handler.provider.app import AppProvider
 
 def handler(event, context):
     """
@@ -18,5 +18,5 @@ def handler(event, context):
     """
 
     logging.debug(context)
-    content = payload.get_content(event)
-    return content
+    app_provider =  AppProvider(event)
+    return app_provider.response

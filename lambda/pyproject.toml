@@ -1,11 +1,14 @@
 [tool.poetry]
-name = "example"
+name = "app_handler"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "App handler"
+authors = ["Voquis"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+boto3 = "^1.21.39"
+botocore = "^1.24.40"
+PyYAML = "^6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
