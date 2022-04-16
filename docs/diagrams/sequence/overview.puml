@@ -1,0 +1,44 @@
+@startuml overview
+autoactivate on
+hide footbox
+
+actor "User" as USER
+
+box "AWS" #LightGoldenRodYellow
+participant "API\nGateway"           as APIGW
+participant "Lambda\nFunction"       as LAMBDA
+participant "Parameter\nStore"       as PARM
+participant "Simple\nEmail Service"  as SES
+participant "DynamoDB"               as DYNAMODB
+' AWS
+USER   ->  APIGW  : Submit contact form
+APIGW  ->  LAMBDA : Relay submitted form
+
+== Start of optional hCaptcha validation ==
+LAMBDA ->  PARM   : Get captcha secret and sitekey
+LAMBDA <-- PARM
+end box
+
+' hCaptcha
+box "hCaptcha" #LightSkyBlue
+participant "hCaptcha" as CAPTCHA
+LAMBDA ->  CAPTCHA : Validate token
+LAMBDA <-- CAPTCHA
+end box
+
+== End of optional hCaptcha validation ==
+
+' AWS
+LAMBDA ->  SES : Send email
+LAMBDA <-- SES
+
+== Start of optional DynamoDB logging ==
+
+LAMBDA ->  DYNAMODB : Write to table
+LAMBDA <-- DYNAMODB
+== End of optional DynamoDB logging ==
+
+APIGW  <-- LAMBDA : Return response
+USER   <-- APIGW : Relay response
+
+@enduml

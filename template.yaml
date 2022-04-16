@@ -16,6 +16,55 @@ Resources:
       Runtime: python3.9
       Architectures:
         - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref messages
+      Environment:
+        Variables:
+          # General config
+          LOG_LEVEL: DEBUG
+          REQUIRED_FIELDS: name, email, subject, message
+          # hCaptcha security config
+          HCAPTCHA_ENABLE: true
+          HCAPTCHA_SITEKEY: "abc"
+          HCAPTCHA_SECRET: "abc"
+          # Database config
+          DATABASE_ENABLE: true
+          DATABASE_TABLE: posts
+          # Email sending config
+          EMAIL_ENABLE: true
+          EMAIL_RECIPIENTS: test1@example.com,test2@example.com
+          EMAIL_SENDER: contact@example.com
+          EMAIL_SUBJECT_TEMPLATE: Contact form - ${subject}
+          EMAIL_TEXT_TEMPLATE: |
+            Hello,
+
+            A New contact submission was received with the following details:
+            Name: ${name}
+            Email: ${email}
+            Message: ${message}
+          # Discord messaging config
+          DISCORD_ENABLE: true
+          DISCORD_WEBHOOK_ID: "123"
+          DISCORD_WEBHOOK_TOKEN: "abc"
+          DISCORD_JSON_TEMPLATE: |
+            {
+              "username":"Contact Service",
+              "content":"New contact submission",
+              "embeds": [
+                {
+                  "author": {
+                    "name": "${name}"
+                  },
+                  "title": "${subject}",
+                  "description": "${message}",
+                  "color": 15258703,
+                  "footer": {
+                    "text": "Sent using Contact Handler"
+                  }
+                }
+              ]
+            }
       Events:
         Api:
           Type: Api

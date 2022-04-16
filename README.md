@@ -1,29 +1,56 @@
-# AWS Lambda function python template
-Opinionated starter repository for creating python Lambda functions that use AWS services.
+# Contact form handler Python AWS Lambda function
+Lambda function to receive input from a simple web form.
+Optionally perform hCaptcha validation and send/store notifications to different services.
 
-## Assumptions
-This starter repository makes the following assumptions.
+Supported frontend integrations:
+- AWS HTTP API Gateway (v2)
+- AWS API Gateway (v1)
 
-### Dependency management
-- Poetry is used to manage dependencies and run tasks
+Supported backend integrations:
+- AWS Simple Email Service (SES)
+- Discord
+- DynamoDB
 
-This project was initiated with:
-```shell
-poetry new example --src
-```
+Application configuration is through any combination of:
+- Environment variables
+- AWS Systems Manager Parameter Store
+- AWS Secrets Manager
 
-### Development environment
-- A shell-capable environment is available
-- Docker is used as the local development environment
-
-### Testing
-- pytest is used to run tests with coverage via GitHub Actions
-
-### Build
-- GitHub Actions are used to test and produce build artifacts
-- A zip bundle is created
-- A wheel package is created
-
+## Environment variables
+Key                                        | Description                                                                                                        | Default                           | Values          | Notes
+-------------------------------------------|--------------------------------------------------------------------------------------------------------------------|-----------------------------------|-----------------|-------
+LOG_LEVEL                                  | Logger level, set to `DEBUG` for the most detail, `CRITICAL` for only the highest severity                         | `INFO`                            | <ul><li>`DEBUG`</li><li>`INFO`</li><li>`WARNING`</li><li>`ERROR`</li><li>`CRITICAL`</li></ul> |
+REQUIRED_FIELDS                            | Comma separated list of fields that must be in the request. Returns `400 Bad Request` if any fields are missing    |                                   |                 |
+HCAPTCHA_ENABLE                            | Whether to enable hCaptcha protection                                                                              | `False`                           | <ul><li>`True`</li><li>`False`</li></ul> |
+HCAPTCHA_SITEKEY                           | hCaptch Sitekey value                                                                                              | `null`                            |                 |
+HCAPTCHA_SITEKEY_SOURCE                    | Where hCaptcha sitekey should be retrieved from                                                                    | `env`                             | <ul><li>`aws_ssm_parameter_store`</li><li>`aws_secrets_manager`</li><li>`env`</li></ul> |
+HCAPTCHA_SITEKEY_PARAMETER_STORE_NAME      | Parameter name for hCaptcha Sitekey if using AWS SSM Parameter Store                                               | `/hcaptcha/sitekey`               |                 |
+HCAPTCHA_SITEKEY_SECRETS_MANAGER_NAME      | Secrets name for hCaptcha Sitekey if using AWS Secrets Manager                                                     | `/hcaptcha/sitekey`               |                 |
+HCAPTCHA_SECRET                            | hCaptch Secret value                                                                                               | `null`                            |                 |
+HCAPTCHA_SECRET_SOURCE                     | Where hCaptcha sitekey should be retrieved from                                                                    | `env`                             | <ul><li>`aws_ssm_parameter_store`</li><li>`aws_secrets_manager`</li><li>`env`</li></ul> |
+HCAPTCHA_SECRET_PARAMETER_STORE_NAME       | Parameter name for hCaptcha Secret if using AWS SSM Parameter Store                                                | `/hcaptcha/secret`                |                 |
+HCAPTCHA_SECRET_SECRETS_MANAGER_NAME       | Secret name for hCaptcha Secret if using AWS Secrets Manager                                                       | `/hcaptcha/secret`                |                 |
+HCAPTCHA_RESPONSE_FIELD                    | Key to find in payload containing the user captcha response                                                        | `captcha-response`                |                 |
+HCAPTCHA_VERIFY_URL                        | Base URL for performing hCaptcha validation                                                                        | `https://hcaptcha.com/siteverify` |                 |
+DATABASE_ENABLE                            | Whether requests to the lambda should store required fields in a DynamoDB database table                           | `False`                           |                 |
+DATABASE_TABLE                             | DynamoDB database table name to store required fields                                                              |                                   |                 |
+DATABASE_TABLE_SOURCE                      | DynamoDB database table name to store required fields                                                              |                                   |                 |
+EMAIL_ENABLE                               | Whether sending emails via AWS Simple Email Service (SES) is enabled                                               | `False`                           | <ul><li>`True`</li><li>`False`</li></ul> |
+EMAIL_RECIPIENTS                           | Comma separated list of destination email addresses                                                                |                                   |                 |
+EMAIL_SENDER                               | Sender email address                                                                                               |                                   |                 |
+EMAIL_TEXT_TEMPLATE                        | Email text [Template string](https://docs.python.org/3/library/string.html#template-strings) with substitution     |                                   |                 |
+EMAIL_SUBJECT_TEMPLATE                     | Email subject [Template string](https://docs.python.org/3/library/string.html#template-strings) with substitution  |                                   |                 |
+DISCORD_ENABLE                             | Whether notifications should be sent to a Discord webhook                                                          | `False`                           |                 |
+DISCORD_WEBHOOK_ID                         | Discord webhook ID                                                                                                 |                                   |                 |
+DISCORD_WEBHOOK_ID_SOURCE                  | Where Discord webhook ID should be retrieved from                                                                  | `env`                             | <ul><li>`aws_ssm_parameter_store`</li><li>`aws_secrets_manager`</li><li>`env`</li></ul> |
+DISCORD_WEBHOOK_ID_PARAMETER_STORE_NAME    | Parameter name for Discord webhook ID if using AWS SSM Parameter Store                                             | `/discord/webhook/id`             |                 |
+DISCORD_WEBHOOK_ID_SECRETS_MANAGER_NAME    | Secret name for hCaptcha Secret if using AWS Secrets Manager                                                       | `/discord/webhook/token`          |                 |
+DISCORD_WEBHOOK_TOKEN                      | Discord webhook token                                                                                              |                                   |                 |
+DISCORD_WEBHOOK_TOKEN_SOURCE               | Where Discord webhook ID should be retrieved from                                                                  | `env`                             | <ul><li>`aws_ssm_parameter_store`</li><li>`aws_secrets_manager`</li><li>`env`</li></ul> |
+DISCORD_WEBHOOK_TOKEN_PARAMETER_STORE_NAME | Parameter name for Discord webhook ID if using AWS SSM Parameter Store                                             | `/discord/webhook/id`             |                 |
+DISCORD_WEBHOOK_TOKEN_SECRETS_MANAGER_NAME | Secret name for hCaptcha Secret if using AWS Secrets Manager                                                       | `/discord/webhook/token`          |                 |
+DISCORD_USERNAME                           | Username to display in message instead of the default                                                              | `Contact`                         |                 |
+DISCORD_JSON_TEMPLATE                      | JSON [Template string](https://docs.python.org/3/library/string.html#template-strings) with substitution           | `New message received`            | `{"username": "Contact Handler", "message": "Message received"}`                | E.g. `Message from ${name}` will use the `name` field in the payload
 ## Local development
 ### Docker
 Developing inside a Docker container ensures a consistent experience and more closely matches the final build.
@@ -33,7 +60,7 @@ Note that will run tests and produce builds.
 The `dev` target uses the first stage of the multi-stage [Dockerfile](./Dockerfile).
 
 ```shell
-docker build -t python-lambda/template/dev --target dev .
+docker build -t python-lambda/contact-form-handler/dev --target dev .
 ```
 
 To then develop inside a container using this image, mount the entire project into a container (in addition to the local AWS config directory) with:
@@ -42,7 +69,7 @@ To then develop inside a container using this image, mount the entire project in
 docker run -i -t --rm \
   -v $(pwd):/project \
   -v $HOME/.aws:/home/lambda/.aws:ro \
-  python-lambda/template/dev
+  python-lambda/contact-form-handler/dev
 ```
 
 ### Run tests
@@ -86,10 +113,13 @@ Once installed and the `sam` command is available, optionally disable telemetry:
 export SAM_CLI_TELEMETRY=0
 ```
 
-Start a local SAM API Gateway on arbitrary port 10112 with:
+Start a local SAM API Gateway on arbitrary port 10112 with the following.
+By specifying a `--profile`, AWS session credentials e.g. AWS SSO can be automatically passed to the lambda.
+
 ```shell
-sam local start-api -p 10112
+sam local start-api -p 10112 --profile=my-profile
 ```
+
 
 Send sample requests to API Gateway (v1) with:
 ```shell
