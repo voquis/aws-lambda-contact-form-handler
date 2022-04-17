@@ -1,0 +1,37 @@
+name: Publish
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      # Checkout project code
+      - uses: actions/checkout@v2
+
+      # Set up python environment
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      # Install python poetry and dependencies for use in later steps
+      - run: ./scripts/poetry.sh
+
+      # Change working directory and run build script
+      - working-directory: ./lambda
+        run: ../scripts/build.sh
+
+      # Prepare AWS credentials using OIDC provider (uses id-token and contents)
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: eu-west-2
+
+      # Change working directory and run build script
+      - working-directory: ./lambda
+        run: ../scripts/publish.sh
