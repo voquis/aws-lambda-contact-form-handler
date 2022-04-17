@@ -5,7 +5,7 @@ from app_handler.provider.response import ResponseProvider
 from app_handler.service.aws import AwsService
 from app_handler.utils.functions import string_to_dict
 
-class DatabaseRunner:
+class DynamodbRunner:
     def __init__(self) -> None:
 
         # Set default values
@@ -21,12 +21,12 @@ class DatabaseRunner:
         logging.debug('Configuring %s', __class__.__name__ )
         configs = ConfigProvider()
 
-        self.enable = configs.get('DATABASE_ENABLE').lower() == 'true'
-        logging.debug("Store to database enable: %s", self.enable)
+        self.enable = configs.get('DYNAMODB_ENABLE').lower() == 'true'
+        logging.debug("Store to dynamodb enable: %s", self.enable)
 
         if self.enable:
             # If email sending is enabled, retrieve additional settings
-            self.table = configs.get('DATABASE_TABLE')
+            self.table = configs.get('DYNAMODB_TABLE')
             # Extract required field names into config object
             self.fields = string_to_dict(configs.get('REQUIRED_FIELDS'))
 
@@ -55,7 +55,7 @@ class DatabaseRunner:
             )
             if not result:
                 # 500 error if service result was not successful
-                logging.critical('Database saving error')
+                logging.critical('Dynamodb saving error')
                 self.error_response = response_provider.message('Storage service error', 500)
 
             return result

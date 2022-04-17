@@ -8,7 +8,7 @@ from app_handler.runner.app import AppRunner
 from app_handler.runner.discord import DiscordRunner
 from app_handler.runner.email import EmailRunner
 from app_handler.runner.hcaptcha import HcaptchaRunner
-from app_handler.runner.database import DatabaseRunner
+from app_handler.runner.dynamodb import DynamodbRunner
 
 class AppProvider:
     """
@@ -22,7 +22,7 @@ class AppProvider:
         self.response_provider = None
         # Prepare runners
         self.app_runner = AppRunner()
-        self.database_runner = DatabaseRunner()
+        self.dynamodb_runner = DynamodbRunner()
         self.hcaptcha_runner = HcaptchaRunner()
         self.email_runner = EmailRunner()
         self.discord_runner = DiscordRunner()
@@ -42,7 +42,7 @@ class AppProvider:
         try:
             self.app_runner.configure()
             self.hcaptcha_runner.configure()
-            self.database_runner.configure()
+            self.dynamodb_runner.configure()
             self.email_runner.configure()
             self.discord_runner.configure()
         except ValueError:
@@ -77,11 +77,11 @@ class AppProvider:
             return self.hcaptcha_runner.error_response
 
         # Optionally log to DynamoDB
-        logging.debug('Executing Database runner')
-        self.database_runner.run(request_provider, self.response_provider)
-        if self.database_runner.error_response is not None:
-            logging.critical('Error executing database runner')
-            return self.database_runner.error_response
+        logging.debug('Executing dynamodb runner')
+        self.dynamodb_runner.run(request_provider, self.response_provider)
+        if self.dynamodb_runner.error_response is not None:
+            logging.critical('Error executing dynamodb runner')
+            return self.dynamodb_runner.error_response
 
         # Optionally send email message
         logging.debug('Executing Email runner')

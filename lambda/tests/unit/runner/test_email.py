@@ -58,6 +58,7 @@ def test_runner_enabled_and_configuration_template_failure(monkeypatch):
     monkeypatch.setenv('EMAIL_SENDER', 'from@example.com')
     monkeypatch.setenv('EMAIL_RECIPIENTS', 'to1@example.com,to2@example.com')
     monkeypatch.setenv('EMAIL_TEXT_TEMPLATE', '{"test":"${missing}"}')
+    monkeypatch.setenv('EMAIL_SUBJECT_TEMPLATE', 'My email subject')
     runner = EmailRunner()
     runner.configure()
 
