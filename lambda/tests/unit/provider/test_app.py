@@ -35,7 +35,7 @@ def test_service_configurations(monkeypatch):
     """
     monkeypatch.setenv('HCAPTCHA_ENABLE', 'true')
     monkeypatch.setenv('EMAIL_ENABLE', 'true')
-    monkeypatch.setenv('DATABASE_ENABLE', 'true')
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'true')
     monkeypatch.setenv('DISCORD_ENABLE', 'true')
     app_provider = AppProvider({'version'})
     assert app_provider.response['statusCode'] == 500
@@ -66,12 +66,12 @@ def test_hcaptcha_error(monkeypatch):
 
 
 @mock_dynamodb
-def test_database_error(monkeypatch):
+def test_dynamodb_error(monkeypatch):
     """
-    Test app provider correctly handles database errors
+    Test app provider correctly handles dynamodb errors
     """
-    monkeypatch.setenv('DATABASE_ENABLE', 'true')
-    monkeypatch.setenv('DATABASE_TABLE', 'my-table')
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'true')
+    monkeypatch.setenv('DYNAMODB_TABLE', 'my-table')
 
     app_provider = AppProvider({'version'})
     assert app_provider.response['statusCode'] == 500
@@ -86,6 +86,8 @@ def test_email_error(monkeypatch):
     monkeypatch.setenv('EMAIL_ENABLE', 'true')
     monkeypatch.setenv('EMAIL_SENDER', 'a@a.com')
     monkeypatch.setenv('EMAIL_RECIPIENTS', 'a@b.com,a@c.com')
+    monkeypatch.setenv('EMAIL_SUBJECT_TEMPLATE', 'Subject')
+    monkeypatch.setenv('EMAIL_TEXT_TEMPLATE', 'My email message')
 
     app_provider = AppProvider({'version'})
     assert app_provider.response['statusCode'] == 500
@@ -122,7 +124,7 @@ def test_all_success(monkeypatch):
     # Configure environment variables
     monkeypatch.setenv('REQUIRED_FIELDS', 'name, subject, message')
     monkeypatch.setenv('HCAPTCHA_ENABLE', 'true')
-    monkeypatch.setenv('DATABASE_ENABLE', 'true')
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'true')
     monkeypatch.setenv('EMAIL_ENABLE', 'true')
     monkeypatch.setenv('DISCORD_ENABLE', 'true')
     # hCaptcha configs
@@ -132,9 +134,9 @@ def test_all_success(monkeypatch):
     monkeypatch.setenv('HCAPTCHA_SECRET_SECRETS_MANAGER_NAME', '/a/hcaptcha/secret')
     monkeypatch.setenv('HCAPTCHA_RESPONSE_FIELD_SOURCE', 'aws_ssm_parameter_store')
     monkeypatch.setenv('HCAPTCHA_RESPONSE_FIELD_PARAMETER_STORE_NAME', '/a/hcaptcha/response_field')
-    # Database configs
-    monkeypatch.setenv('DATABASE_TABLE_SOURCE', 'aws_ssm_parameter_store')
-    monkeypatch.setenv('DATABASE_TABLE_PARAMETER_STORE_NAME', '/a/database/table')
+    # Dynamodb configs
+    monkeypatch.setenv('DYNAMODB_TABLE_SOURCE', 'aws_ssm_parameter_store')
+    monkeypatch.setenv('DYNAMODB_TABLE_PARAMETER_STORE_NAME', '/a/dynamodb/table')
     # Email configs
     monkeypatch.setenv('EMAIL_SENDER_SOURCE', 'aws_ssm_parameter_store')
     monkeypatch.setenv('EMAIL_SENDER_PARAMETER_STORE_NAME', '/a/email/sender')
@@ -156,8 +158,8 @@ def test_all_success(monkeypatch):
     aws_utils.ssm_put_parameter_securestring('/a/hcaptcha/sitekey', 'abc')
     aws_utils.put_secretsmanager_secret('/a/hcaptcha/secret', '123')
     aws_utils.ssm_put_parameter_securestring('/a/hcaptcha/response_field', 'captcha-response')
-    # Database configs
-    aws_utils.ssm_put_parameter_securestring('/a/database/table', 'table-e4d3s5')
+    # Dynamodb configs
+    aws_utils.ssm_put_parameter_securestring('/a/dynamodb/table', 'table-e4d3s5')
     aws_utils.create_dynamodb_table('table-e4d3s5')
     # Email configs
     aws_utils.ssm_put_parameter_securestring('/a/email/sender', 'from-123@example.com')

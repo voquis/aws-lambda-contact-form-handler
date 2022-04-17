@@ -14,6 +14,29 @@ os.environ['AWS_DEFAULT_REGION'] = 'eu-west-2'
 
 config = ConfigProvider()
 
+def test_invalid_names():
+    """
+    Assert invalid or empty names produce exceptions
+    """
+    # Test non-existent variable throws an exception
+    with pytest.raises(ValueError) as exception:
+        config.get('')
+
+    with pytest.raises(ValueError) as env_exception:
+        config.get_from_env('')
+
+    with pytest.raises(ValueError) as ps_exception:
+        config.get_from_aws_ssm_parameter_store('')
+
+    with pytest.raises(ValueError) as sm_exception:
+        config.get_from_aws_secrets_manager('')
+
+    assert str(exception.value) == 'Invalid key name provided'
+    assert str(env_exception.value) == 'Missing or empty environment key'
+    assert str(ps_exception.value) == 'Missing or empty environment value for _PARAMETER_STORE_NAME'
+    assert str(sm_exception.value) == 'Missing or empty environment value for _SECRETS_MANAGER_NAME'
+
+
 def test_env_vars(monkeypatch):
     """
     Test Fetching config values from environment
@@ -41,6 +64,7 @@ def test_unknown_source(monkeypatch):
         config.get('UNKNOWN')
 
     assert 'Unknown source' in str(exception.value)
+
 
 @mock_ssm
 def test_aws_ssm_parameter_store_success(monkeypatch):
@@ -70,7 +94,8 @@ def test_aws_ssm_parameter_store_no_name(monkeypatch):
     with pytest.raises(ValueError) as exception:
         config.get('SSM_NONAME')
 
-    assert 'No Default or provided parameter name' in str(exception.value)
+    msg = 'Missing or empty environment value for SSM_NONAME_PARAMETER_STORE_NAME'
+    assert str(exception.value) == msg
 
 
 @mock_ssm
@@ -116,7 +141,8 @@ def test_aws_secrets_manager_no_name(monkeypatch):
     with pytest.raises(ValueError) as exception:
         config.get('SECRET_NONAME')
 
-    assert 'No Default or provided secret name' in str(exception.value)
+    msg = 'Missing or empty environment value for SECRET_NONAME_SECRETS_MANAGER_NAME'
+    assert str(exception.value) == msg
 
 
 @mock_secretsmanager
@@ -131,4 +157,5 @@ def test_aws_secrets_manager_does_not_exist(monkeypatch):
     with pytest.raises(ValueError) as exception:
         config.get('SECRET_NONEXISTENT')
 
-    assert 'Missing or empty AWS Secrets Manager value' in str(exception.value)
+    msg = 'Missing or empty AWS Secrets Manager value for /does/not/exist'
+    assert str(exception.value) == msg

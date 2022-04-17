@@ -3,8 +3,8 @@ Interact with the following AWS services:
   - Simple Email Service to send emails
   - SSM Parameter store to fetch encrypted parameters
 """
-
 import logging
+import os
 from time import time
 import uuid
 import boto3
@@ -20,7 +20,9 @@ class AwsService:
         self.ssm = boto3.client('ssm')
         self.secretsmanager = boto3.client('secretsmanager')
         # Prepare AWS Service Resources
-        self.dynamodb = boto3.resource('dynamodb')
+        self.dynamodb_endpoint_url = os.environ.get('DYNAMODB_ENDPOINT_URL', None)
+        self.dynamodb = boto3.resource('dynamodb', endpoint_url=self.dynamodb_endpoint_url)
+        logging.debug('Using dynamodb endpoint url: %s', self.dynamodb_endpoint_url)
 
     def get_parameter_value(self, name) -> str:
         """
@@ -135,7 +137,7 @@ class AwsService:
         use the client
         """
 
-        client = boto3.client('dynamodb')
+        client = boto3.client('dynamodb', endpoint_url=self.dynamodb_endpoint_url)
 
         logging.debug('Writing to table %s', table)
 

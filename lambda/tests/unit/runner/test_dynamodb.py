@@ -7,7 +7,7 @@ import pytest
 
 from app_handler.provider.request import RequestProvider
 from app_handler.provider.response import ResponseProvider
-from app_handler.runner.database import DatabaseRunner
+from app_handler.runner.dynamodb import DynamodbRunner
 from tests.unit.service.aws_utils import create_dynamodb_table
 from moto import mock_dynamodb
 
@@ -25,7 +25,7 @@ def test_runner_not_enabled():
     request_provider = RequestProvider(payload)
     response_provider = ResponseProvider(payload)
 
-    runner = DatabaseRunner()
+    runner = DynamodbRunner()
     runner.configure()
     assert runner.enable == False
 
@@ -39,12 +39,12 @@ def test_runner_enabled_not_configured(monkeypatch):
     Configuring should throw an exception.
     """
 
-    monkeypatch.setenv('DATABASE_ENABLE', 'True')
-    runner = DatabaseRunner()
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'True')
+    runner = DynamodbRunner()
     with pytest.raises(ValueError) as exception:
         runner.configure()
 
-    assert 'DATABASE_TABLE' in str(exception.value)
+    assert 'DYNAMODB_TABLE' in str(exception.value)
 
 
 @mock_dynamodb
@@ -54,9 +54,9 @@ def test_runner_enabled_and_configured_failure(monkeypatch):
     Trying to put to a non-existent table should trigger service exception
     """
 
-    monkeypatch.setenv('DATABASE_ENABLE', 'True')
-    monkeypatch.setenv('DATABASE_TABLE', 'non-existent-table')
-    runner = DatabaseRunner()
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'True')
+    monkeypatch.setenv('DYNAMODB_TABLE', 'non-existent-table')
+    runner = DynamodbRunner()
     runner.configure()
     assert runner.enable == True
     assert runner.table == 'non-existent-table'
@@ -77,9 +77,9 @@ def test_runner_enabled_and_missing_fields(monkeypatch):
     """
 
     monkeypatch.setenv('REQUIRED_FIELDS', 'name, email')
-    monkeypatch.setenv('DATABASE_ENABLE', 'True')
-    monkeypatch.setenv('DATABASE_TABLE', 'new-table')
-    runner = DatabaseRunner()
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'True')
+    monkeypatch.setenv('DYNAMODB_TABLE', 'new-table')
+    runner = DynamodbRunner()
     runner.configure()
 
     payload = {'version': '1.0','body': {'notName':'a', 'notEmail':'b'}}
@@ -99,9 +99,9 @@ def test_runner_enabled_and_configured_success(monkeypatch):
     """
 
     monkeypatch.setenv('REQUIRED_FIELDS', 'name, email')
-    monkeypatch.setenv('DATABASE_ENABLE', 'True')
-    monkeypatch.setenv('DATABASE_TABLE', 'new-table')
-    runner = DatabaseRunner()
+    monkeypatch.setenv('DYNAMODB_ENABLE', 'True')
+    monkeypatch.setenv('DYNAMODB_TABLE', 'new-table')
+    runner = DynamodbRunner()
     runner.configure()
     assert runner.enable == True
     assert runner.table == 'new-table'

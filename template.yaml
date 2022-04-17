@@ -24,13 +24,17 @@ Resources:
           # General config
           LOG_LEVEL: DEBUG
           REQUIRED_FIELDS: name, email, subject, message
-          # hCaptcha security config
+          # hCaptcha config, demo sitekey and secret values provided below (do not provide any protection).
+          # Be sure to use  account values to actually protect this service.
+          # For integration details see https://docs.hcaptcha.com/#integration-testing-test-keys
           HCAPTCHA_ENABLE: true
-          HCAPTCHA_SITEKEY: "abc"
-          HCAPTCHA_SECRET: "abc"
-          # Database config
-          DATABASE_ENABLE: true
-          DATABASE_TABLE: posts
+          HCAPTCHA_SITEKEY: '10000000-ffff-ffff-ffff-000000000001'
+          HCAPTCHA_SECRET: '0x0000000000000000000000000000000000000000'
+          # DynamoDB config
+          # Set the endpoint URL following if using DynamoDB local
+          DYNAMODB_ENABLE: true
+          DYNAMODB_TABLE: website-contact
+          # DYNAMODB_ENDPOINT_URL: http://dynamodb:8000
           # Email sending config
           EMAIL_ENABLE: true
           EMAIL_RECIPIENTS: test1@example.com,test2@example.com
