@@ -64,8 +64,11 @@ class EmailRunner:
             try:
                 body = text_template.substitute(self.fields)
                 subject = subject_template.substitute(self.fields)
-            except KeyError as exception:
-                logging.critical('Discord template parsing error')
+            except (
+                ValueError,
+                KeyError
+            ) as exception:
+                logging.critical('Email template parsing error')
                 logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
                 return

@@ -72,7 +72,10 @@ class DiscordRunner:
             string_template = Template(self.json_template)
             try:
                 body = string_template.substitute(fields)
-            except KeyError as exception:
+            except (
+                KeyError,
+                ValueError
+            ) as exception:
                 logging.critical('Discord template parsing error')
                 logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
