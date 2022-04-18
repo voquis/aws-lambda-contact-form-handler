@@ -3,6 +3,7 @@ Response provider
 """
 
 import logging
+import json
 
 class ResponseProvider:
     """
@@ -58,7 +59,7 @@ class ResponseProvider:
             "statusCode": status_code,
             "headers":  kwargs.get('headers', {'content-type':'application/json'}),
             "multiValueHeaders": kwargs.get('multi_value_headers', {}),
-            "body": body,
+            "body": json.dumps(body),
         }
 
         return output

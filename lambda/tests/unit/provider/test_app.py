@@ -49,7 +49,7 @@ def test_app_error(monkeypatch):
     monkeypatch.setenv('REQUIRED_FIELDS', 'a')
     app_provider = AppProvider({'version':'1.0', 'body': {}})
     assert app_provider.response['statusCode'] == 400
-    assert app_provider.response['body']['message'] == 'Missing required field `a`'
+    assert app_provider.response['body'] == '{"message": "Missing required field `a`"}'
 
 
 def test_hcaptcha_error(monkeypatch):
@@ -193,4 +193,4 @@ def test_all_success(monkeypatch):
 
     app_provider = AppProvider(payload)
     assert app_provider.response['statusCode'] == 200
-    assert app_provider.response['body']['message'] == 'Message received'
+    assert app_provider.response['body'] == '{"message": "Message received"}'

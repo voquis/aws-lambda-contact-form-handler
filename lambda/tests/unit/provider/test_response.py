@@ -17,9 +17,7 @@ def test_api_v1_json_message():
             "content-type": "application/json"
         },
         "multiValueHeaders": {},
-        "body": {
-            "message": "OK"
-        }
+        "body": '{"message": "OK"}'
     }
 
     assert ResponseProvider({'version':'1.0'}).message('OK') == expected
