@@ -64,8 +64,11 @@ DISCORD_JSON_TEMPLATE           | JSON Template string with substitution        
 ## Templating
 
 The following variables provide Python [String Templates](https://docs.python.org/3/library/string.html#template-strings).
--
-
+Placeholders should match fields named defined in `REQUIRED_FIELDS` and should be of the form `${field_name}`.
+For example, if `REQUIRED_FIELDS=name,email`, the template string could be `New email from ${name} (${email})` and the result would be `New email from First Last (first.last@example.com)`
+- `DISCORD_JSON_TEMPLATE` - See the [Discord webhook JSON] guide](https://birdie0.github.io/discord-webhooks-guide/discord_webhook.html) for a full example.
+- `EMAIL_SUBJECT_TEMPLATE` - Plain text string to use in Email subject
+- `EMAIL_TEXT_TEMPLATE` - Plain text string to use in Email body
 
 ## Local development with Docker
 Developing inside a Docker container ensures a consistent experience and more closely matches the final build.
