@@ -1,8 +1,6 @@
 """
 Runner unit tests
 """
-import os
-
 from app_handler.runner.app import AppRunner
 
 def test_empty_runner(monkeypatch):
@@ -76,4 +74,23 @@ def test_empty_body(monkeypatch):
     payload = {'version': '1.0','body': {'a': ''}}
     response = runner.run(payload)
     assert not response
+    assert runner.error_response['statusCode'] == 400
+
+
+def test_bad_url_encoded_body():
+    """
+    Test bad urlencoded event body is handled correctly
+    """
+
+    payload = {
+        'version': '1.0',
+        "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+        },
+        'body': {'set'}
+    }
+    runner = AppRunner()
+    runner.configure()
+    response = runner.run(payload)
+    assert response == None
     assert runner.error_response['statusCode'] == 400

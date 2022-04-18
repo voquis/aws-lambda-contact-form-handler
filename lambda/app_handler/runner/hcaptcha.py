@@ -66,7 +66,7 @@ class HcaptchaRunner:
             # 500 error if service has failed
             if not response or 'status' not in response or response['status'] > 400:
                 # 500 error if service runtime error
-                logging.critical('Discord HTTP error')
+                logging.critical('hCaptcha HTTP error')
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 

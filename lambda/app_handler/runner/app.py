@@ -36,16 +36,10 @@ class AppRunner:
         """
 
         response_provider = ResponseProvider(event)
-
-        try:
-            self.request_provider = RequestProvider(event)
-        except (
-            JSONDecodeError,
-            TypeError
-        ) as exception:
+        self.request_provider = RequestProvider(event)
+        if self.request_provider.has_error:
             # 400 error if provided bad JSON
-            logging.warning(exception)
-            self.error_response = response_provider.message('Error decoding JSON', 400)
+            self.error_response = response_provider.message('Error parsing request', 400)
             return
 
         self.request_body = self.request_provider.content

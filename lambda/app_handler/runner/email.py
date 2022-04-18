@@ -50,8 +50,9 @@ class EmailRunner:
             for field in self.fields:
                 try:
                     fields[field] = request_provider.content[field]
-                except KeyError:
+                except KeyError as exception:
                     logging.critical('Field extraction error for key: %s', field)
+                    logging.critical(exception)
                     self.error_response = response_provider.message('Notification service error', 500)
                     return
             self.fields = fields
@@ -64,7 +65,8 @@ class EmailRunner:
                 body = text_template.substitute(self.fields)
                 subject = subject_template.substitute(self.fields)
             except KeyError as exception:
-                logging.critical('Discord template parsing error: %s', exception)
+                logging.critical('Discord template parsing error')
+                logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 
