@@ -11,6 +11,6 @@ poetry run pylint "${PACKAGE_NAME}" tests app.py
 
 # Run tests and generate test coverage report
 poetry run coverage run -m pytest tests/unit
-poetry run coverage report --omit="tests/*"
 poetry run coverage html --omit="tests*"
 poetry run coverage xml --omit="tests/*"
+poetry run coverage report --omit="tests/*" --precision=2 --fail-under=100.00
