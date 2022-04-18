@@ -45,7 +45,7 @@ class DiscordService:
         """
         # Attempt to validate template
         try:
-            self.body = json.dumps(json.loads(body))
+            self.body = json.dumps(json.loads(body,strict=False))
         except json.JSONDecodeError as exception:
             message = 'Error parsing Discord JSON template'
             logging.critical(message)

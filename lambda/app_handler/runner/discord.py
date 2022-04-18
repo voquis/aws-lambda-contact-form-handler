@@ -37,7 +37,7 @@ class DiscordRunner:
 
             # Verify json template is valid
             try:
-                json.loads(self.json_template)
+                json.loads(self.json_template, strict=False)
             except json.JSONDecodeError as exception:
                 message = 'Error decoding Discord JSON template'
                 logging.critical(message)

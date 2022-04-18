@@ -185,13 +185,12 @@ def test_all_success(monkeypatch):
             {
                 "name": "My Name",
                 "subject": "My subject",
-                "message": "Message",
+                "message": "This\nis\amultiline\nMessage",
                 "captcha-response": "xyz"
             }
         """
     }
 
     app_provider = AppProvider(payload)
-    print(app_provider.response)
     assert app_provider.response['statusCode'] == 200
     assert app_provider.response['body']['message'] == 'Message received'

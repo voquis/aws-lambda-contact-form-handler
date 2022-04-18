@@ -4,6 +4,7 @@ Parse incoming request to lambda
 
 import base64
 import json
+from json import JSONDecodeError
 import urllib
 import logging
 
@@ -14,6 +15,7 @@ class RequestProvider:
     def __init__(self, payload):
         self.payload = payload
         self.content = payload
+        self.has_error = None
         self.parse(payload)
 
     def parse(self, payload):
@@ -62,12 +64,29 @@ class RequestProvider:
 
         if content_type == 'application/x-www-form-urlencoded':
             logging.debug('Decoding URL encoded form')
-            html_decoded = urllib.parse.unquote(self.content)
-            self.content = urllib.parse.parse_qs(html_decoded)
+            try:
+                html_decoded = urllib.parse.unquote(self.content)
+                self.content = urllib.parse.parse_qs(html_decoded)
+                logging.info(self.content)
+            except(
+                AttributeError,
+                ValueError
+            ) as exception:
+                logging.critical('Error decoding URL encoded form')
+                logging.critical(exception)
+                self.has_error = True
 
         if  content_type == 'application/json':
             logging.debug('Loading JSON string')
-            self.content = json.loads(self.content)
+            try:
+                self.content = json.loads(self.content, strict=False)
+            except (
+                JSONDecodeError,
+                TypeError
+            ) as exception:
+                logging.critical('Error loading string as JSON')
+                logging.critical(exception)
+                self.has_error = True
 
 
     def get_remote_ip(self):
