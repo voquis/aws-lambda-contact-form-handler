@@ -49,6 +49,7 @@ class DiscordService:
         except json.JSONDecodeError as exception:
             message = 'Error parsing Discord JSON template'
             logging.critical(message)
+            logging.critical(exception)
             raise ValueError(message) from exception
 
 

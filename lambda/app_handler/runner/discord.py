@@ -41,6 +41,7 @@ class DiscordRunner:
             except json.JSONDecodeError as exception:
                 message = 'Error decoding Discord JSON template'
                 logging.critical(message)
+                logging.critical(exception)
                 raise ValueError(message) from exception
 
             # Extract required field names into config object
@@ -59,8 +60,9 @@ class DiscordRunner:
             for field in self.fields:
                 try:
                     fields[field] = request_provider.content[field]
-                except KeyError:
+                except KeyError as exception:
                     logging.critical('Field extraction error for key: %s', field)
+                    logging.critical(exception)
                     self.error_response = response_provider.message('Notification service error', 500)
                     return
 
@@ -71,7 +73,8 @@ class DiscordRunner:
             try:
                 body = string_template.substitute(fields)
             except KeyError as exception:
-                logging.critical('Discord template parsing error: %s', exception)
+                logging.critical('Discord template parsing error')
+                logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 
@@ -84,7 +87,8 @@ class DiscordRunner:
                 )
             except ValueError as exception:
                 # 500 error if service initiation error
-                logging.critical('Discord service initiation error: %s', exception)
+                logging.critical('Discord service initiation error')
+                logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 

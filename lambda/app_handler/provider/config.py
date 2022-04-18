@@ -34,6 +34,7 @@ class ConfigProvider:
         if not isinstance(key, str) or len(key) == 0:
             message = 'Invalid key name provided'
             logging.critical(message)
+            logging.critical(key)
             raise ValueError(message)
 
         logging.debug('Retrieving value for key %s', key)
@@ -65,6 +66,7 @@ class ConfigProvider:
         if not isinstance(key, str) or len(key) == 0:
             message = 'Missing or empty environment key'
             logging.critical(message)
+            logging.critical(key)
             raise ValueError(message)
 
         logging.debug('Checking environment for key: %s', key)

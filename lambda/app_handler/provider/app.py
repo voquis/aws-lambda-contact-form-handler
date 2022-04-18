@@ -45,9 +45,10 @@ class AppProvider:
             self.dynamodb_runner.configure()
             self.email_runner.configure()
             self.discord_runner.configure()
-        except ValueError:
+        except ValueError as exception:
             # 500 error if any configs fail
             logging.critical('Error configuring services')
+            logging.critical(exception)
             self.response = self.response_provider.message('Error configuring services', 500)
             return
 
@@ -65,6 +66,7 @@ class AppProvider:
         self.app_runner.run(event)
         if self.app_runner.error_response is not None:
             logging.critical('Error executing app runner')
+            logging.critical(self.app_runner.error_response)
             return self.app_runner.error_response
 
         request_provider = self.app_runner.request_provider
@@ -74,6 +76,7 @@ class AppProvider:
         self.hcaptcha_runner.run(request_provider, self.response_provider)
         if self.hcaptcha_runner.error_response is not None:
             logging.critical('Error executing hcaptcha runner')
+            logging.critical(self.hcaptcha_runner.error_response)
             return self.hcaptcha_runner.error_response
 
         # Optionally log to DynamoDB
@@ -81,6 +84,7 @@ class AppProvider:
         self.dynamodb_runner.run(request_provider, self.response_provider)
         if self.dynamodb_runner.error_response is not None:
             logging.critical('Error executing dynamodb runner')
+            logging.critical(self.dynamodb_runner.error_response)
             return self.dynamodb_runner.error_response
 
         # Optionally send email message
@@ -88,6 +92,7 @@ class AppProvider:
         self.email_runner.run(request_provider, self.response_provider)
         if self.email_runner.error_response is not None:
             logging.critical('Error executing email runner')
+            logging.critical(self.email_runner.error_response)
             return self.email_runner.error_response
 
         # Optionally send Discord message
@@ -95,6 +100,7 @@ class AppProvider:
         self.discord_runner.run(request_provider, self.response_provider)
         if self.discord_runner.error_response is not None:
             logging.critical('Error executing Discord runner')
+            logging.critical(self.discord_runner.error_response)
             return self.discord_runner.error_response
 
         # Successful result
