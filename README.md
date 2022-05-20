@@ -83,15 +83,19 @@ docker network create contact-form-handler
 ### Dynamodb Local
 To start DynamoDB Local:
 ```shell
-docker run --rm \
+docker run --rm -d \
   --network contact-form-handler \
   --name dynamodb \
+  --entrypoint "" \
   -p 10113:8000 \
-  amazon/dynamodb-local
+  amazon/dynamodb-local \
+  java -jar DynamoDBLocal.jar \
+  -inMemory \
+  -sharedDb
 ```
 
 Create a local table with the expected `id` and `timestamp` indexes.
-> Ensure you have exported a default AWS region, as this must be the same between the DynamoDB container and the running Python code. Although the region doesn't matter, consistency is important.
+> Ensure you have exported a default AWS region, as this must be the same between the DynamoDB container and the running Python code. If you are using a profile, the regions should all match, even locally.
 ```shell
 export AWS_DEFAULT_REGION=us-east-1
 ```
@@ -105,6 +109,7 @@ aws dynamodb create-table \
   --attribute-definitions AttributeName=id,AttributeType=S AttributeName=timestamp,AttributeType=N \
   --key-schema AttributeName=id,KeyType=HASH AttributeName=timestamp,KeyType=RANGE \
   --billing-mode PAY_PER_REQUEST \
+  --region "$AWS_DEFAULT_REGION"
 ```
 
 To list local tables, run the following.
@@ -115,7 +120,7 @@ AWS_SECRET_ACCESS_KEY=abc \
 aws dynamodb \
   list-tables \
   --endpoint-url http://127.0.0.1:10113 \
-  --region us-east-2
+  --region "$AWS_DEFAULT_REGION"
 ```
 
 ### Local development container
@@ -149,6 +154,7 @@ export SAM_CLI_TELEMETRY=0
 
 Then start a local SAM API Gateway on arbitrary port `10112` with the following, connected to the existing Docker network.
 By specifying a `--profile`, AWS session credentials e.g. AWS SSO can be automatically passed to the lambda.
+Ensure a Docker network has been created per the above if using a local DynamoDB container.
 
 ```shell
 sam local start-api \
@@ -156,6 +162,20 @@ sam local start-api \
   --warm-containers EAGER \
   -p 10112 \
   --profile=my-profile
+```
+
+Send sample requests to API Gateway (v1) with:
+```shell
+curl http://127.0.0.1:10112/api -X POST --data '{"name": "First Last", "email":"a@b.c", "subject":"My Subject", "message":"My Message"}' -H 'content-type:application/json'
+curl http://127.0.0.1:10112/api -X POST --data-binary @./lambda/tests/unit/fixtures/request.json -H 'content-type:application/json'
+curl http://127.0.0.1:10112/api --data-urlencode "name=First Last&subject=My Subject&email=a@b.c&message=My Message"
+```
+
+Send sample requests to HTTP API Gateway (v2) with:
+```shell
+curl http://127.0.0.1:10112/httpapiv2 -X POST --data '{"name": "First Last", "email":"a@b.c", "subject":"My Subject", "message":"My Message"}' -H 'content-type:application/json'
+curl http://127.0.0.1:10112/httpapiv2 --data-binary @./lambda/tests/unit/fixtures/request.json -H 'content-type:application/json'
+curl http://127.0.0.1:10112/httpapiv2 --data-urlencode "name=First Last&subject=My Subject&email=a@b.c&message=My Message"
 ```
 
 ### Run tests
@@ -190,19 +210,4 @@ docker run --rm \
 Make a HTTP Post request to the lambda with:
 ```shell
 curl -d '{"key":"value"}' -X POST http://127.0.0.1:10111/2015-03-31/functions/function/invocations
-```
-
-
-
-Send sample requests to API Gateway (v1) with:
-```shell
-curl http://127.0.0.1:10112/api -X POST --data '{"key": "test value"}' -H 'content-type:application/json'
-curl http://127.0.0.1:10112/api -X POST --data-binary @./lambda/tests/unit/fixtures/request.json -H 'content-type:application/json'
-curl http://127.0.0.1:10112/api --data-urlencode "key=test value"
-```
-
-Send sample requests to HTTP API Gateway (v2) with:
-```shell
-curl http://127.0.0.1:10112/httpapiv2 -X POST --data '{"key": "test value"}' -H 'content-type:application/json'
-curl http://127.0.0.1:10112/httpapiv2 --data-urlencode "key=test value"
 ```
