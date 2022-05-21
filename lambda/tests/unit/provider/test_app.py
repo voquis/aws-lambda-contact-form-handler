@@ -7,10 +7,29 @@ import httpretty
 from moto import mock_dynamodb, mock_ses, mock_secretsmanager, mock_ssm
 
 from app_handler.provider.app import AppProvider
-from tests.unit.service import aws_utils, discord_utils, hcaptcha_utils
+from tests.unit.service import aws_utils, discord_utils, hcaptcha_utils, slack_utils
 
 # Set boto/moto client default values
 os.environ['AWS_DEFAULT_REGION'] = 'eu-west-2'
+
+# Define constant
+DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/123/abc'
+SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/abc/xyz/123'
+PAYLOAD = {
+    'version': '2.0',
+    'headers': {
+        'Content-Type': 'application/json'
+    },
+    'body': """
+        {
+            "name": "My Name",
+            "subject": "My subject",
+            "message": "This\nis\amultiline\nMessage",
+            "captcha-response": "xyz"
+        }
+    """
+}
+
 
 def test_string_request():
     """
@@ -100,8 +119,7 @@ def test_discord_error(monkeypatch):
     Test app provider correctly handles discord sending errors
     """
     monkeypatch.setenv('DISCORD_ENABLE', 'true')
-    monkeypatch.setenv('DISCORD_WEBHOOK_ID', '123')
-    monkeypatch.setenv('DISCORD_WEBHOOK_TOKEN', 'abc')
+    monkeypatch.setenv('DISCORD_WEBHOOK_URL', DISCORD_WEBHOOK_URL)
     monkeypatch.setenv('DISCORD_JSON_TEMPLATE', '{"test":"string"}')
 
     # Mock failing discord response
@@ -112,21 +130,18 @@ def test_discord_error(monkeypatch):
     assert app_provider.response['message'] == 'Notification service error'
 
 
-@httpretty.activate(allow_net_connect=False)
-@mock_dynamodb
-@mock_secretsmanager
-@mock_ses
-@mock_ssm
-def test_all_success(monkeypatch):
+def patch_env_all_success(monkeypatch):
     """
-    Test app provider correctly handles when all cases are successful
+    Used by test_all_success
     """
+
     # Configure environment variables
     monkeypatch.setenv('REQUIRED_FIELDS', 'name, subject, message')
     monkeypatch.setenv('HCAPTCHA_ENABLE', 'true')
     monkeypatch.setenv('DYNAMODB_ENABLE', 'true')
     monkeypatch.setenv('EMAIL_ENABLE', 'true')
     monkeypatch.setenv('DISCORD_ENABLE', 'true')
+    monkeypatch.setenv('SLACK_ENABLE', 'true')
     # hCaptcha configs
     monkeypatch.setenv('HCAPTCHA_SITEKEY_SOURCE', 'aws_ssm_parameter_store')
     monkeypatch.setenv('HCAPTCHA_SITEKEY_PARAMETER_STORE_NAME', '/a/hcaptcha/sitekey')
@@ -147,12 +162,21 @@ def test_all_success(monkeypatch):
     monkeypatch.setenv('EMAIL_TEXT_TEMPLATE_SOURCE', 'aws_ssm_parameter_store')
     monkeypatch.setenv('EMAIL_TEXT_TEMPLATE_PARAMETER_STORE_NAME', '/a/email/template/text')
     # Discord configs
-    monkeypatch.setenv('DISCORD_WEBHOOK_ID_SOURCE', 'aws_ssm_parameter_store')
-    monkeypatch.setenv('DISCORD_WEBHOOK_ID_PARAMETER_STORE_NAME', '/a/discord/webhook/id')
-    monkeypatch.setenv('DISCORD_WEBHOOK_TOKEN_SOURCE', 'aws_secrets_manager')
-    monkeypatch.setenv('DISCORD_WEBHOOK_TOKEN_SECRETS_MANAGER_NAME', '/a/discord/webhook/token')
+    monkeypatch.setenv('DISCORD_WEBHOOK_URL_SOURCE', 'aws_secrets_manager')
+    monkeypatch.setenv('DISCORD_WEBHOOK_URL_SECRETS_MANAGER_NAME', '/a/discord/webhook/url')
     monkeypatch.setenv('DISCORD_JSON_TEMPLATE_SOURCE', 'aws_ssm_parameter_store')
     monkeypatch.setenv('DISCORD_JSON_TEMPLATE_PARAMETER_STORE_NAME', '/a/discord/template/json')
+    # Slack configs
+    monkeypatch.setenv('SLACK_WEBHOOK_URL_SOURCE', 'aws_secrets_manager')
+    monkeypatch.setenv('SLACK_WEBHOOK_URL_SECRETS_MANAGER_NAME', '/a/slack/webhook/url')
+    monkeypatch.setenv('SLACK_JSON_TEMPLATE_SOURCE', 'aws_ssm_parameter_store')
+    monkeypatch.setenv('SLACK_JSON_TEMPLATE_PARAMETER_STORE_NAME', '/a/slack/template/json')
+
+
+def aws_config_all_success():
+    """
+    Used by test_all_success
+    """
 
     # Create Mocked AWS resources
     aws_utils.ssm_put_parameter_securestring('/a/hcaptcha/sitekey', 'abc')
@@ -168,29 +192,33 @@ def test_all_success(monkeypatch):
     aws_utils.ssm_put_parameter_securestring('/a/email/template/text', 'Message: ${message}')
     aws_utils.ses_verify_email_identity('from-123@example.com')
     # Discord configs
-    aws_utils.ssm_put_parameter_securestring('/a/discord/webhook/id', '123')
-    aws_utils.put_secretsmanager_secret('/a/discord/webhook/token', 'abc')
+    aws_utils.put_secretsmanager_secret('/a/discord/webhook/url', DISCORD_WEBHOOK_URL)
     aws_utils.ssm_put_parameter_securestring('/a/discord/template/json', '{"content":"${message}"}')
+    # Slack configs
+    aws_utils.put_secretsmanager_secret('/a/slack/webhook/url', SLACK_WEBHOOK_URL)
+    aws_utils.ssm_put_parameter_securestring('/a/slack/template/json', '{"content":"${message}"}')
+
+
+@httpretty.activate(allow_net_connect=False)
+@mock_dynamodb
+@mock_secretsmanager
+@mock_ses
+@mock_ssm
+def test_all_success(monkeypatch):
+    """
+    Test app provider correctly handles when all cases are successful
+    """
+
+    # Patch all environment variables
+    patch_env_all_success(monkeypatch)
+    # Configure AWS services, e.g. with secrets and parameters
+    aws_config_all_success()
 
     # Mock API calls
     hcaptcha_utils.httpretty_register_hcaptcha_siteverify_success()
     discord_utils.httpretty_register_discord_webhook_success()
+    slack_utils.httpretty_register_slack_webhook_success()
 
-    payload = {
-        'version': '2.0',
-        'headers': {
-            'Content-Type': 'application/json'
-        },
-        'body': """
-            {
-                "name": "My Name",
-                "subject": "My subject",
-                "message": "This\nis\amultiline\nMessage",
-                "captcha-response": "xyz"
-            }
-        """
-    }
-
-    app_provider = AppProvider(payload)
+    app_provider = AppProvider(PAYLOAD)
     assert app_provider.response['statusCode'] == 200
     assert app_provider.response['body'] == '{"message": "Message received"}'

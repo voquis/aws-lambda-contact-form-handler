@@ -21,6 +21,7 @@ class ConfigProvider:
             "DYNAMODB_ENABLE": 'False',
             "EMAIL_ENABLE": 'False',
             "DISCORD_ENABLE": 'False',
+            "SLACK_ENABLE": 'False',
         }
 
     def get(self, key: str) -> str:

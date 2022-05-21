@@ -10,6 +10,7 @@ Supported backend integrations:
 - AWS Simple Email Service (SES)
 - Discord
 - DynamoDB
+- Slack
 
 Application configuration is through any combination of:
 - Environment variables
@@ -57,9 +58,11 @@ EMAIL_SENDER                    | Sender email address                          
 EMAIL_TEXT_TEMPLATE             | Email text Template string with substitution                  |
 EMAIL_SUBJECT_TEMPLATE          | Email subject Template string with substitution               |
 DISCORD_ENABLE                  | Whether notifications should be sent to a Discord webhook     | <ul><li>`True`</li><li>`False` (default)</li></ul>
-DISCORD_WEBHOOK_ID              | Discord webhook ID                                            |
-DISCORD_WEBHOOK_TOKEN           | Discord webhook token                                         |
+DISCORD_WEBHOOK_URL             | Discord webhook URL                                           |
 DISCORD_JSON_TEMPLATE           | JSON Template string with substitution                        |
+SLACK_ENABLE                    | Whether notifications should be sent to a Slack webhook       | <ul><li>`True`</li><li>`False` (default)</li></ul>
+SLACK_WEBHOOK_URL               | Slack webhook URL                                             |
+SLACK_JSON_TEMPLATE             | JSON Template string with substitution                        |
 
 ## Templating
 
@@ -69,6 +72,7 @@ For example, if `REQUIRED_FIELDS=name,email`, the template string could be `New 
 - `DISCORD_JSON_TEMPLATE` - See the [Discord webhook JSON] guide](https://birdie0.github.io/discord-webhooks-guide/discord_webhook.html) for a full example.
 - `EMAIL_SUBJECT_TEMPLATE` - Plain text string to use in Email subject
 - `EMAIL_TEXT_TEMPLATE` - Plain text string to use in Email body
+- `SLACK_JSON_TEMPLATE` - See the [Slack rich message layout] guide](https://api.slack.com/messaging/composing/layouts#sending-messages) for further details.
 
 ## Local development with Docker
 Developing inside a Docker container ensures a consistent experience and more closely matches the final build.
@@ -143,6 +147,11 @@ docker run -i -t --rm \
   python-lambda/contact-form-handler/dev
 ```
 
+E.g. to run tests:
+```shell
+cd lambda
+../scripts/validate.sh
+```
 
 ### Local API gateway with Serverless Application Model (SAM)
 The AWS Serverless Application Model allows [running an API Gateway locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-start-api.html).

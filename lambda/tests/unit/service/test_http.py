@@ -36,8 +36,26 @@ def test_http_ok_urlencoded():
 @httpretty.activate(allow_net_connect=False)
 def test_http_not_json():
     """
-    Test HTTP OK 200 with JSON is parsed correctly
+    Test Exception is raised with non JSON serialisable type
     """
     utils.httpretty_register_http_success_json_response()
     with pytest.raises(ValueError):
         http.post_json('https://example.com/json', {'set'})
+
+
+def test_http_bad_url():
+    """
+    Test Exception is raised with bad URL
+    """
+
+    with pytest.raises(ValueError):
+        http.post_json('badurl', {'a':'b'})
+
+
+def test_http_unreachable():
+    """
+    Test Exception is raised with unreachable URL
+    """
+
+    response = http.post_json('http://a', {'a':'b'})
+    assert response['status'] is None

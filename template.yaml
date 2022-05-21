@@ -25,7 +25,7 @@ Resources:
           LOG_LEVEL: DEBUG
           REQUIRED_FIELDS: name, email, subject, message
           # hCaptcha config, demo sitekey and secret values provided below (do not provide any protection).
-          # Be sure to use  account values to actually protect this service.
+          # Be sure to use real account values to actually protect this service.
           # For integration details see https://docs.hcaptcha.com/#integration-testing-test-keys
           HCAPTCHA_ENABLE: true
           HCAPTCHA_SITEKEY: '10000000-ffff-ffff-ffff-000000000001'
@@ -49,8 +49,7 @@ Resources:
             Message: ${message}
           # Discord messaging config
           DISCORD_ENABLE: true
-          DISCORD_WEBHOOK_ID: "123"
-          DISCORD_WEBHOOK_TOKEN: "abc"
+          DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/123/abc"
           DISCORD_JSON_TEMPLATE: |
             {
               "username":"Contact Service",
@@ -66,6 +65,30 @@ Resources:
                   "footer": {
                     "text": "Sent using Contact Handler"
                   }
+                }
+              ]
+            }
+          # Slack messaging config
+          SLACK_ENABLE: true
+          SLACK_WEBHOOK_URL: "https://hooks.slack.com/services/abc/xyz/123"
+          SLACK_JSON_TEMPLATE: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "New contact from :${name}\nEmail: *${email}*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*${subject}*\n${message}"
+                    }
+                  ]
                 }
               ]
             }
