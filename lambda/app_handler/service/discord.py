@@ -3,61 +3,20 @@ Class to post messages to a Discord server.
 For API usage see https://discord.com/developers/docs/resources/webhook#execute-webhook
 """
 
-import json
 import logging
-from app_handler.service.http import HttpService
+from app_handler.service.http_post_json import HttpPostJsonService
 
-class DiscordService:
+class DiscordService(HttpPostJsonService):
     """
     Makes HTTP calls to Discord service
     """
 
     def __init__(
         self,
-        webhook_id:str,
-        webhook_token:str,
+        discord_webhook_url:str,
         body:str,
-        base_url:str = 'https://discord.com/api/webhooks'
     ) -> None:
 
-        if body is None:
-            message = 'Missing Discord body'
-            logging.critical(message)
-            raise ValueError(message)
-
-        if webhook_id is None or webhook_token is None:
-            message = 'Missing Discord webhook id or token'
-            logging.critical(message)
-            raise ValueError(message)
-
-        self.parse_body(body)
-
-        # Set up inputs
-        self.url = f'{base_url}/{webhook_id}/{webhook_token}'
-        self.response = None
+        super().__init__(discord_webhook_url, body)
 
         logging.debug('Discord service configured')
-
-
-    def parse_body(self, body):
-        """
-        Parse string JSON to JSON dictionary and back to validate
-        """
-        # Attempt to validate template
-        try:
-            self.body = json.dumps(json.loads(body,strict=False))
-        except json.JSONDecodeError as exception:
-            message = 'Error parsing Discord JSON template'
-            logging.critical(message)
-            logging.critical(exception)
-            raise ValueError(message) from exception
-
-
-    def send(self):
-        """
-        Send Discord message
-        """
-
-        http_service = HttpService()
-        self.response = http_service.post_json(self.url, self.body)
-        return self.response

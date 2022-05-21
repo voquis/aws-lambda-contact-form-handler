@@ -1,5 +1,5 @@
 """
-Class to sending data over HTTP
+Class to send data over HTTP
 """
 
 import json
@@ -47,7 +47,14 @@ class HttpService():
         # Attempt to encode data
         encoded = json_data.encode(encoding)
 
-        req = Request(url)
+        try:
+            req = Request(url)
+        except ValueError as exception:
+            message = 'Unable to parse HTTP request URL'
+            logging.critical(message)
+            logging.critical(exception)
+            raise ValueError(message) from exception
+
         req.add_header('Content-Type', 'application/json')
 
         return self._post(req, encoded)

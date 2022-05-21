@@ -2,13 +2,13 @@ import json
 import logging
 from string import Template
 
-from app_handler.service.discord import DiscordService
+from app_handler.service.slack import SlackService
 from app_handler.provider.config import ConfigProvider
 from app_handler.provider.request import RequestProvider
 from app_handler.provider.response import ResponseProvider
 from app_handler.utils.functions import string_to_dict
 
-class DiscordRunner:
+class SlackRunner:
     def __init__(self) -> None:
 
         # Set default values
@@ -23,21 +23,21 @@ class DiscordRunner:
         Configure builder
         """
         configs = ConfigProvider()
-        logging.debug("Initialising discord config")
-        self.enable = configs.get('DISCORD_ENABLE').lower() == 'true'
-        logging.debug("Discord enable: %s", self.enable)
+        logging.debug("Initialising Slack config")
+        self.enable = configs.get('SLACK_ENABLE').lower() == 'true'
+        logging.debug("Slack enable: %s", self.enable)
 
         # If enabled, retrieve additional configs
         if self.enable:
-            logging.debug('Configuring additional Discord settings')
-            self.webhook_url = configs.get('DISCORD_WEBHOOK_URL')
-            self.json_template = configs.get('DISCORD_JSON_TEMPLATE')
+            logging.debug('Configuring additional Skacj settings')
+            self.webhook_url = configs.get('SLACK_WEBHOOK_URL')
+            self.json_template = configs.get('SLACK_JSON_TEMPLATE')
 
             # Verify json template is valid
             try:
                 json.loads(self.json_template, strict=False)
             except json.JSONDecodeError as exception:
-                message = 'Error decoding Discord JSON template'
+                message = 'Error decoding Slack JSON template'
                 logging.critical(message)
                 logging.critical(exception)
                 raise ValueError(message) from exception
@@ -74,29 +74,29 @@ class DiscordRunner:
                 KeyError,
                 ValueError
             ) as exception:
-                logging.critical('Discord template parsing error')
+                logging.critical('Slack template parsing error')
                 logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 
-            # Set up Discord client
+            # Set up Slack client
             try:
-                discord_client = DiscordService(
+                slack_client = SlackService(
                     self.webhook_url,
                     body
                 )
             except ValueError as exception:
                 # 500 error if service initiation error
-                logging.critical('Discord service initiation error')
+                logging.critical('Slack service initiation error')
                 logging.critical(exception)
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 
             # Attempt to send templated message
-            response = discord_client.send()
+            response = slack_client.send()
             if not response or 'status' not in response or response['status'] > 400:
                 # 500 error if service runtime error
-                logging.critical('Discord HTTP error')
+                logging.critical('Slack HTTP error')
                 self.error_response = response_provider.message('Notification service error', 500)
                 return
 

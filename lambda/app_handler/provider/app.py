@@ -6,9 +6,10 @@ import logging
 from app_handler.provider.response import ResponseProvider
 from app_handler.runner.app import AppRunner
 from app_handler.runner.discord import DiscordRunner
+from app_handler.runner.dynamodb import DynamodbRunner
 from app_handler.runner.email import EmailRunner
 from app_handler.runner.hcaptcha import HcaptchaRunner
-from app_handler.runner.dynamodb import DynamodbRunner
+from app_handler.runner.slack import SlackRunner
 
 class AppProvider:
     """
@@ -22,11 +23,7 @@ class AppProvider:
         self.response_provider = None
         # Prepare runners
         self.app_runner = AppRunner()
-        self.dynamodb_runner = DynamodbRunner()
-        self.hcaptcha_runner = HcaptchaRunner()
-        self.email_runner = EmailRunner()
-        self.discord_runner = DiscordRunner()
-
+        self.runners = {}
         # Process event
         self.process(event)
 
@@ -35,16 +32,23 @@ class AppProvider:
         """
         Process event payload sent to lambda
         """
-        # Prepare request and respones providers
+        # Prepare request and response providers
         self.response_provider = ResponseProvider(event)
+
+        self.runners['discord'] = DiscordRunner()
+        self.runners['dynamodb'] = DynamodbRunner()
+        self.runners['email'] = EmailRunner()
+        self.runners['hcaptcha'] = HcaptchaRunner()
+        self.runners['slack'] = SlackRunner()
 
         # Attempt to initialise configs
         try:
             self.app_runner.configure()
-            self.hcaptcha_runner.configure()
-            self.dynamodb_runner.configure()
-            self.email_runner.configure()
-            self.discord_runner.configure()
+            self.runners['discord'].configure()
+            self.runners['dynamodb'].configure()
+            self.runners['email'].configure()
+            self.runners['hcaptcha'].configure()
+            self.runners['slack'].configure()
         except ValueError as exception:
             # 500 error if any configs fail
             logging.critical('Error configuring services')
@@ -71,37 +75,15 @@ class AppProvider:
 
         request_provider = self.app_runner.request_provider
 
-        # Optionally perform hCaptcha validation
-        logging.debug('Executing hCaptcha runner')
-        self.hcaptcha_runner.run(request_provider, self.response_provider)
-        if self.hcaptcha_runner.error_response is not None:
-            logging.critical('Error executing hcaptcha runner')
-            logging.critical(self.hcaptcha_runner.error_response)
-            return self.hcaptcha_runner.error_response
+        # Iterate through all non-app runners and handle any failures
+        for runner_name, runner in self.runners.items():
+            logging.debug('Executing %s runner', runner_name)
+            runner.run(request_provider, self.response_provider)
+            if runner.error_response is not None:
+                logging.critical('Error executing %s runner', runner_name)
+                logging.critical(runner.error_response)
+                return runner.error_response
 
-        # Optionally log to DynamoDB
-        logging.debug('Executing dynamodb runner')
-        self.dynamodb_runner.run(request_provider, self.response_provider)
-        if self.dynamodb_runner.error_response is not None:
-            logging.critical('Error executing dynamodb runner')
-            logging.critical(self.dynamodb_runner.error_response)
-            return self.dynamodb_runner.error_response
-
-        # Optionally send email message
-        logging.debug('Executing Email runner')
-        self.email_runner.run(request_provider, self.response_provider)
-        if self.email_runner.error_response is not None:
-            logging.critical('Error executing email runner')
-            logging.critical(self.email_runner.error_response)
-            return self.email_runner.error_response
-
-        # Optionally send Discord message
-        logging.debug('Executing Discord runner')
-        self.discord_runner.run(request_provider, self.response_provider)
-        if self.discord_runner.error_response is not None:
-            logging.critical('Error executing Discord runner')
-            logging.critical(self.discord_runner.error_response)
-            return self.discord_runner.error_response
 
         # Successful result
         return self.response_provider.message('Message received')

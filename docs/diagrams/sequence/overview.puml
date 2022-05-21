@@ -8,37 +8,49 @@ box "AWS" #LightGoldenRodYellow
 participant "API\nGateway"           as APIGW
 participant "Lambda\nFunction"       as LAMBDA
 participant "Parameter\nStore"       as PARM
-participant "Simple\nEmail Service"  as SES
+participant "SimpleEmail\nService (SES)"  as SES
 participant "DynamoDB"               as DYNAMODB
+
 ' AWS
 USER   ->  APIGW  : Submit contact form
 APIGW  ->  LAMBDA : Relay submitted form
 
-== Start of optional hCaptcha validation ==
+== Validate hCaptcha ==
 LAMBDA ->  PARM   : Get captcha secret and sitekey
-LAMBDA <-- PARM
+return
 end box
 
 ' hCaptcha
 box "hCaptcha" #LightSkyBlue
 participant "hCaptcha" as CAPTCHA
 LAMBDA ->  CAPTCHA : Validate token
-LAMBDA <-- CAPTCHA
+return
 end box
 
-== End of optional hCaptcha validation ==
+== Send email (optional) ==
 
 ' AWS
 LAMBDA ->  SES : Send email
-LAMBDA <-- SES
+return
 
-== Start of optional DynamoDB logging ==
+== Log to DynamoDB (optional) ==
 
 LAMBDA ->  DYNAMODB : Write to table
-LAMBDA <-- DYNAMODB
-== End of optional DynamoDB logging ==
+return
+
+== Send Discord message (optional) ==
+box "Discord" #Plum
+participant "Discord" as DISCORD
+LAMBDA ->  DISCORD : Send message to Discord channel
+return
+
+== Send Slack message (optional) ==
+box "Slack" #LimeGreen
+participant "Slack" as SLACK
+LAMBDA ->  SLACK : Send message to Slack channel
+return
 
 APIGW  <-- LAMBDA : Return response
-USER   <-- APIGW : Relay response
+return Relay response
 
 @enduml
