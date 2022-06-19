@@ -64,10 +64,10 @@ class HcaptchaRunner:
             # Perform validation
             response = hcaptcha_service.validate(user_response, user_ip)
             # 500 error if service has failed
-            if not response or 'status' not in response or response['status'] > 400:
+            if not response or 'status' not in response or response['status'] > 399:
                 # 500 error if service runtime error
                 logging.critical('hCaptcha HTTP error')
-                self.error_response = response_provider.message('Notification service error', 500)
+                self.error_response = response_provider.message('hCaptcha service error', 500)
                 return
 
             if not hcaptcha_service.success:

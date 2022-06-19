@@ -42,6 +42,7 @@ class HcaptchaService:
         }
 
         logging.debug('Checking if hCaptcha request is valid')
+        logging.debug(data)
 
         http_service = HttpService()
         self.response = http_service.post_urlencoded(self.url, data)
