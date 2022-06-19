@@ -62,12 +62,15 @@ class RequestProvider:
         content_type = content_type.lower()
         logging.debug('Content-Type detected: %s', content_type)
 
-        if content_type == 'application/x-www-form-urlencoded':
+        matched = False
+
+        if content_type.startswith('application/x-www-form-urlencoded'):
             logging.debug('Decoding URL encoded form')
             try:
                 html_decoded = urllib.parse.unquote(self.content)
                 self.content = urllib.parse.parse_qs(html_decoded)
                 logging.info(self.content)
+                matched = True
             except(
                 AttributeError,
                 ValueError
@@ -76,10 +79,11 @@ class RequestProvider:
                 logging.critical(exception)
                 self.has_error = True
 
-        if  content_type == 'application/json':
+        if content_type.startswith('application/json'):
             logging.debug('Loading JSON string')
             try:
                 self.content = json.loads(self.content, strict=False)
+                matched = True
             except (
                 JSONDecodeError,
                 TypeError
@@ -88,6 +92,9 @@ class RequestProvider:
                 logging.critical(exception)
                 self.has_error = True
 
+        if not matched:
+            logging.critical('Error determining how to load content type.')
+            self.has_error = True
 
     def get_remote_ip(self):
         """

@@ -51,6 +51,13 @@ def test_payload_parse_bad_header_type():
     data = {'body': 'bad header type', 'headers': {'Content-Type': {}}}
     assert RequestProvider(data).content == 'bad header type'
 
+def test_payload_parse_unknown_header_type():
+    """
+    Test invoked lambda with unknown content type header
+    """
+    data = {'body': 'unknown header type', 'headers': {'Content-Type': 'abc'}}
+    assert RequestProvider(data).content == 'unknown header type'
+
 # JSON body tests without base64 encoding
 
 def test_payload_parse_api_gateway_no_base64_json():
