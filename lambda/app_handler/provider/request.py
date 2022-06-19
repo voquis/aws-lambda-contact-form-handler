@@ -69,7 +69,7 @@ class RequestProvider:
             try:
                 html_decoded = urllib.parse.unquote(self.content)
                 # Assume each value should only appear once, drop repeat keys
-                self.content = dict(urllib.parse.parse_qs(html_decoded))
+                self.content = dict(urllib.parse.parse_qsl(html_decoded))
                 logging.debug(self.content)
                 matched = True
             except(
