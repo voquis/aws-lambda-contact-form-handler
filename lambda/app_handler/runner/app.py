@@ -45,14 +45,14 @@ class AppRunner:
         self.request_body = self.request_provider.content
 
         for field in self.required_fields:
-            if field not in self.request_provider.content:
+            if field not in self.request_body:
                 # 400 error if request did not contain a required field
                 message = f'Missing required field `{field}`'
                 logging.warning(message)
                 self.error_response = response_provider.message(message, 400)
                 return
 
-            if len(self.request_provider.content[field]) == 0:
+            if len(self.request_body[field]) == 0:
                 # 400 error if required field exists but is empty
                 message = f'Required field empty `{field}`'
                 logging.warning(message)
