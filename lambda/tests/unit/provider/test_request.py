@@ -7,7 +7,6 @@ import pathlib
 from app_handler.provider.request import RequestProvider
 
 json_data = {'key': 'test value'}
-urlencoded_data = {'key': ['test value']}
 
 def get_json_fixture_file(filename):
     """
@@ -105,7 +104,7 @@ def test_payload_parse_api_gateway_no_base64_urlencoded():
     """
 
     event = get_json_fixture_file('api_gateway_request_urlencoded_no_base64.json')
-    assert RequestProvider(event).content == urlencoded_data
+    assert RequestProvider(event).content == json_data
 
 
 def test_payload_parse_httpapiv2_gateway_no_base64_urlencoded():
@@ -115,7 +114,7 @@ def test_payload_parse_httpapiv2_gateway_no_base64_urlencoded():
     """
 
     event = get_json_fixture_file('httpapiv2_gateway_request_urlencoded_no_base64.json')
-    assert RequestProvider(event).content == urlencoded_data
+    assert RequestProvider(event).content == json_data
 
 # URL encoded body tests with base64 encoding
 
@@ -126,7 +125,7 @@ def test_payload_parse_api_gateway_base64_urlencoded():
     """
 
     event = get_json_fixture_file('api_gateway_request_urlencoded_base64.json')
-    assert RequestProvider(event).content == urlencoded_data
+    assert RequestProvider(event).content == json_data
 
 
 def test_payload_parse_httpapiv2_gateway_base64_urlencoded():
@@ -136,7 +135,7 @@ def test_payload_parse_httpapiv2_gateway_base64_urlencoded():
     """
 
     event = get_json_fixture_file('httpapiv2_gateway_request_urlencoded_base64.json')
-    assert RequestProvider(event).content == urlencoded_data
+    assert RequestProvider(event).content == json_data
 
 def test_get_remote_ip():
     """
