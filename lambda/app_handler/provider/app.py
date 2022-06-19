@@ -23,6 +23,7 @@ class AppProvider:
         self.response_provider = None
         # Prepare runners
         self.app_runner = AppRunner()
+        self.hcaptcha_runner = HcaptchaRunner()
         self.runners = {}
         # Process event
         self.process(event)
@@ -38,16 +39,15 @@ class AppProvider:
         self.runners['discord'] = DiscordRunner()
         self.runners['dynamodb'] = DynamodbRunner()
         self.runners['email'] = EmailRunner()
-        self.runners['hcaptcha'] = HcaptchaRunner()
         self.runners['slack'] = SlackRunner()
 
         # Attempt to initialise configs
         try:
             self.app_runner.configure()
+            self.hcaptcha_runner.configure()
             self.runners['discord'].configure()
             self.runners['dynamodb'].configure()
             self.runners['email'].configure()
-            self.runners['hcaptcha'].configure()
             self.runners['slack'].configure()
         except ValueError as exception:
             # 500 error if any configs fail
@@ -75,7 +75,15 @@ class AppProvider:
 
         request_provider = self.app_runner.request_provider
 
-        # Iterate through all non-app runners and handle any failures
+        # hCapture runner that should prevent further runners if validation failes
+        logging.debug('Executing hCaptcha runner')
+        self.hcaptcha_runner.run(request_provider, self.response_provider)
+        if self.hcaptcha_runner.error_response is not None:
+            logging.critical('Error executing hCaptcha runner')
+            logging.critical(self.hcaptcha_runner.error_response)
+            return self.hcaptcha_runner.error_response
+
+        # Iterate through all remaining runners and handle any failures
         for runner_name, runner in self.runners.items():
             logging.debug('Executing %s runner', runner_name)
             runner.run(request_provider, self.response_provider)
