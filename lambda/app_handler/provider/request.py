@@ -68,8 +68,9 @@ class RequestProvider:
             logging.debug('Decoding URL encoded form')
             try:
                 html_decoded = urllib.parse.unquote(self.content)
-                self.content = urllib.parse.parse_qs(html_decoded)
-                logging.info(self.content)
+                # Assume each value should only appear once, drop repeat keys
+                self.content = dict(urllib.parse.parse_qs(html_decoded))
+                logging.debug(self.content)
                 matched = True
             except(
                 AttributeError,
@@ -83,6 +84,7 @@ class RequestProvider:
             logging.debug('Loading JSON string')
             try:
                 self.content = json.loads(self.content, strict=False)
+                logging.debug(self.content)
                 matched = True
             except (
                 JSONDecodeError,
