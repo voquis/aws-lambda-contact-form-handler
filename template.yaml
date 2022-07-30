@@ -6,6 +6,10 @@ Description: Sample SAM Template for sam-app
 Globals:
   Function:
     Timeout: 3
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowMethods: "'*'"
 
 Resources:
   LambdaFunction:
@@ -92,6 +96,7 @@ Resources:
                 }
               ]
             }
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
       Events:
         Api:
           Type: Api
