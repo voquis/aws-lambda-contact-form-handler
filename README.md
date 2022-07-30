@@ -178,6 +178,7 @@ Send sample requests to API Gateway (v1) with:
 curl http://127.0.0.1:10112/api -X POST --data '{"name": "First Last", "email":"a@b.c", "subject":"My Subject", "message":"My Message"}' -H 'content-type:application/json'
 curl http://127.0.0.1:10112/api -X POST --data-binary @./lambda/tests/unit/fixtures/request.json -H 'content-type:application/json'
 curl http://127.0.0.1:10112/api --data-urlencode "name=First Last&subject=My Subject&email=a@b.c&message=My Message"
+curl http://127.0.0.1:10112/api -F "name=First Last" -F "subject=My Subject" -F "email=a@b.c" -F "message=My Message"
 ```
 
 Send sample requests to HTTP API Gateway (v2) with:
