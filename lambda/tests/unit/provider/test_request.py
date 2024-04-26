@@ -146,3 +146,14 @@ def test_get_remote_ip():
     eventv2 = get_json_fixture_file('httpapiv2_gateway_request_urlencoded_base64.json')
     assert RequestProvider(eventv1).get_remote_ip() == '127.0.0.1'
     assert RequestProvider(eventv2).get_remote_ip() == '127.0.0.1'
+
+# SNS topic
+
+def test_payload_parse_sns_message():
+    """
+    Ensure that an SNS message is correctly parsed
+    """
+
+    sns_request = get_json_fixture_file('sns_message_v1.json')
+    assert RequestProvider(sns_request).content['Message'] == 'Hello from SNS!'
+    assert RequestProvider(sns_request).content['Subject'] == 'TestInvoke'

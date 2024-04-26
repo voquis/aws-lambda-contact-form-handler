@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout project code
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Install and run shellcheck for all shell scripts
       - run: sudo apt install shellcheck
@@ -19,7 +19,7 @@ jobs:
       # Use python setup action to configure version
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
       # Install python poetry and dependencies for use in later steps
       - run: ./scripts/poetry.sh
