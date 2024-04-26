@@ -17,7 +17,7 @@ jobs:
       - run: for f in $(find scripts -type f -name *.sh); do shellcheck $f; done;
 
       # Use python setup action to configure version
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
         with:
           python-version: '3.11'
 
