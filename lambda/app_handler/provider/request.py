@@ -16,6 +16,7 @@ class RequestProvider:
         self.payload = payload
         self.content = payload
         self.has_error = None
+        self.matched = False
         self.parse(payload)
 
     def parse(self, payload):
@@ -25,7 +26,12 @@ class RequestProvider:
             - Invocation as a Python function
             - Invocation of Lambda function
             - Invocation behind an AWS HTTP v2 API Gateway
+            - Invocation by an SNS topic
         """
+
+        # Check if lambda was invoked as an SNS message
+        if self.is_sns_message(payload):
+            return
 
         if 'body' not in payload:
             logging.debug('Body not in payload, returning payload')
@@ -62,39 +68,11 @@ class RequestProvider:
         content_type = content_type.lower()
         logging.debug('Content-Type detected: %s', content_type)
 
-        matched = False
+        self.is_form_url_encoded(content_type=content_type)
 
-        if content_type.startswith('application/x-www-form-urlencoded'):
-            logging.debug('Decoding URL encoded form')
-            try:
-                html_decoded = urllib.parse.unquote(self.content)
-                # Assume each value should only appear once, drop repeat keys
-                self.content = dict(urllib.parse.parse_qsl(html_decoded))
-                logging.debug(self.content)
-                matched = True
-            except(
-                AttributeError,
-                ValueError
-            ) as exception:
-                logging.critical('Error decoding URL encoded form')
-                logging.critical(exception)
-                self.has_error = True
+        self.is_application_json(content_type=content_type)
 
-        if content_type.startswith('application/json'):
-            logging.debug('Loading JSON string')
-            try:
-                self.content = json.loads(self.content, strict=False)
-                logging.debug(self.content)
-                matched = True
-            except (
-                JSONDecodeError,
-                TypeError
-            ) as exception:
-                logging.critical('Error loading string as JSON')
-                logging.critical(exception)
-                self.has_error = True
-
-        if not matched:
+        if not self.matched:
             logging.critical('Error determining how to load content type.')
             self.has_error = True
 
@@ -119,3 +97,58 @@ class RequestProvider:
         logging.debug('Fetched remote IP from payload: %s', remote_ip)
 
         return remote_ip
+
+
+    def is_sns_message(self, payload):
+        """
+        Determine if payload is an SNS message
+        """
+        # Handle first SNS message
+        if 'Records' in payload and isinstance(payload['Records'], list):
+            record = payload['Records'][0]
+            if 'Sns' in record and 'Message' in record['Sns'] and 'Subject' in record['Sns']:
+                logging.debug('SNS payload extracted')
+                self.content = record['Sns']
+                return True
+
+        return False
+
+
+    def is_application_json(self, content_type: str):
+        """
+        Determine of payload is JSON
+        """
+        if content_type.startswith('application/json'):
+            logging.debug('Loading JSON string')
+            try:
+                self.content = json.loads(self.content, strict=False)
+                logging.debug(self.content)
+                self.matched = True
+            except (
+                JSONDecodeError,
+                TypeError
+            ) as exception:
+                logging.critical('Error loading string as JSON')
+                logging.critical(exception)
+                self.has_error = True
+
+
+    def is_form_url_encoded(self, content_type: str):
+        """
+        Determine if payload is form URL encoded
+        """
+        if content_type.startswith('application/x-www-form-urlencoded'):
+            logging.debug('Decoding URL encoded form')
+            try:
+                html_decoded = urllib.parse.unquote(self.content)
+                # Assume each value should only appear once, drop repeat keys
+                self.content = dict(urllib.parse.parse_qsl(html_decoded))
+                logging.debug(self.content)
+                self.matched = True
+            except(
+                AttributeError,
+                ValueError
+            ) as exception:
+                logging.critical('Error decoding URL encoded form')
+                logging.critical(exception)
+                self.has_error = True
