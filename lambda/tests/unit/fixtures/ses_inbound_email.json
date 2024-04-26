@@ -1,0 +1,164 @@
+{
+  "Records": [
+    {
+      "eventSource": "aws:ses",
+      "eventVersion": "1.0",
+      "ses": {
+        "mail": {
+          "timestamp": "2023-10-01T18:50:09.847Z",
+          "source": "first.last@example.com",
+          "messageId": "abc1234567890",
+          "destination": [
+            "hello@example.net"
+          ],
+          "headersTruncated": false,
+          "headers": [
+            {
+              "name": "Return-Path",
+              "value": "<first.last@example.com>"
+            },
+            {
+              "name": "Received",
+              "value": "from prod1.example.com (prod1.example.com [1.2.3.4]) by inbound-smtp.eu-west-1.amazonaws.com with SMTP id abc123 for hello@example.net; Sun, 01 Oct 2023 18:50:09 +0000 (UTC)"
+            },
+            {
+              "name": "X-SES-Spam-Verdict",
+              "value": "PASS"
+            },
+            {
+              "name": "X-SES-Virus-Verdict",
+              "value": "PASS"
+            },
+            {
+              "name": "Received-SPF",
+              "value": "pass (spfCheck: domain of example.com designates 1.2.3.4 as permitted sender) client-ip=1.2.3.4; envelope-from=first.last@example.com; helo=prod1.example.com;"
+            },
+            {
+              "name": "Authentication-Results",
+              "value": "amazonses.com; spf=pass (spfCheck: domain of example.com designates 1.2.3.4 as permitted sender) client-ip=1.2.3.4; envelope-from=first.last@example.com; helo=prod1.example.com; dkim=permerror header.i=@example.com; dmarc=none header.from=example.com;"
+            },
+            {
+              "name": "X-SES-RECEIPT",
+              "value": "abc123"
+            },
+            {
+              "name": "X-SES-DKIM-SIGNATURE",
+              "value": "a=rsa-sha256; q=dns/txt; b=abc123; c=relaxed/simple; s=abc123; d=amazonses.com; t=1696186211; v=1; bh=abc123; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;"
+            },
+            {
+              "name": "ARC-Seal",
+              "value": "i=1; a=rsa-sha256; t=1696186206; cv=none;  d=example.com; s=examplearc;  b=abc123"
+            },
+            {
+              "name": "ARC-Message-Signature",
+              "value": "i=1; a=rsa-sha256; c=relaxed/relaxed; d=example.com; s=examplearc;  t=1696186206; h=Content-Type:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To:Cc;  bh=abc123;  b=abc321"
+            },
+            {
+              "name": "ARC-Authentication-Results",
+              "value": "i=1; mx.example.com; dkim=pass  header.i=example.com; spf=pass  smtp.mailfrom=first.last@example.com; dmarc=pass header.from=<first.last@example.com>"
+            },
+            {
+              "name": "DKIM-Signature",
+              "value": "v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1696186206; s=example; d=example.com; i=first.last@example.com; h=Date:Date:From:From:To:To:Message-Id:Message-Id:In-Reply-To:References:Subject:Subject:MIME-Version:Content-Type:Reply-To:Cc; bh=abc123; b=abc123"
+            },
+            {
+              "name": "Received",
+              "value": "from mail.example.com by mx.example.com with SMTP id 123123; Sun, 1 Oct 2023 11:49:58 -0700 (PDT)"
+            },
+            {
+              "name": "Date",
+              "value": "Sun, 01 Oct 2023 19:49:58 +0100"
+            },
+            {
+              "name": "From",
+              "value": "first.last <first.last@example.com>"
+            },
+            {
+              "name": "To",
+              "value": "\"First Last\" <hello@example.net>"
+            },
+            {
+              "name": "Message-Id",
+              "value": "<123123@example.com>"
+            },
+            {
+              "name": "In-Reply-To",
+              "value": "<abcabc@eu-west-1.amazonses.com>"
+            },
+            {
+              "name": "References",
+              "value": "<abcabc@eu-west-1.amazonses.com>"
+            },
+            {
+              "name": "Subject",
+              "value": "Re: Responding to your message"
+            },
+            {
+              "name": "MIME-Version",
+              "value": "1.0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "multipart/alternative;  boundary=\"----=_Part_1619218_806451855.123\""
+            },
+            {
+              "name": "Importance",
+              "value": "Medium"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Example Mail"
+            },
+            {
+              "name": "X-Mailer",
+              "value": "Example Mail"
+            },
+            {
+              "name": "X-Example-Virus-Status",
+              "value": "1"
+            }
+          ],
+          "commonHeaders": {
+            "returnPath": "first.last@example.com",
+            "from": [
+              "first.last <first.last@example.com>"
+            ],
+            "date": "Sun, 01 Oct 2023 19: 49: 58 +0100",
+            "to": [
+              "First Last <hello@example.net>"
+            ],
+            "messageId": "<123123@example.com>",
+            "subject": "Re: Responding to your message"
+          }
+        },
+        "receipt": {
+          "timestamp": "2023-10-01T18:50:09.847Z",
+          "processingTimeMillis": 2288,
+          "recipients": [
+            "hello@example.net"
+          ],
+          "spamVerdict": {
+            "status": "PASS"
+          },
+          "virusVerdict": {
+            "status": "PASS"
+          },
+          "spfVerdict": {
+            "status": "PASS"
+          },
+          "dkimVerdict": {
+            "status": "PROCESSING_FAILED"
+          },
+          "dmarcVerdict": {
+            "status": "GRAY"
+          },
+          "action": {
+            "type": "Lambda",
+            "functionArn": "arn:aws:lambda:eu-west-1:123456789012:function:my-lambda",
+            "invocationType": "Event"
+          }
+        }
+      }
+    }
+  ]
+}
