@@ -75,7 +75,7 @@ class AppProvider:
 
         request_provider = self.app_runner.request_provider
 
-        # hCapture runner that should prevent further runners if validation failes
+        # hCapture runner that should prevent further runners if validation fails
         logging.debug('Executing hCaptcha runner')
         self.hcaptcha_runner.run(request_provider, self.response_provider)
         if self.hcaptcha_runner.error_response is not None:

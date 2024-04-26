@@ -17,6 +17,7 @@ def handler(event, context):
     https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
     """
 
+    logging.debug(event)
     logging.debug(context)
     app_provider =  AppProvider(event)
     return app_provider.response
