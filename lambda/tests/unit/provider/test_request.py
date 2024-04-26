@@ -146,3 +146,13 @@ def test_get_remote_ip():
     eventv2 = get_json_fixture_file('httpapiv2_gateway_request_urlencoded_base64.json')
     assert RequestProvider(eventv1).get_remote_ip() == '127.0.0.1'
     assert RequestProvider(eventv2).get_remote_ip() == '127.0.0.1'
+
+# SES email tests
+
+def test_payload_parse_ses_inbound_email():
+    """
+    Test invoked lambda payload from SES is correctly parsed
+    """
+
+    event = get_json_fixture_file('ses_inbound_email.json')
+    assert RequestProvider(event).content == json_data
